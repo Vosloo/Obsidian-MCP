@@ -156,7 +156,7 @@ def _find_section(lines: list[str], heading: str) -> tuple[int, int] | None:
     return None
 
 
-async def handle_write_tool(name: str, arguments: dict, client) -> str:
+async def handle_write_tool(name: str, arguments: dict, client, cli=None) -> str:
     """Handle write tool execution."""
     if name == "create_note":
         await client.create_note(path=arguments["path"], content=arguments["content"])
@@ -217,6 +217,16 @@ async def handle_write_tool(name: str, arguments: dict, client) -> str:
         filename = source_path.split("/")[-1]
         destination_path = f"{destination_dir}/{filename}"
 
+        # Try the Obsidian CLI first — it performs a native move that preserves
+        # timestamps and triggers Obsidian's "Automatically update internal links".
+        # 'to=' accepts the destination directory; the CLI preserves the filename.
+        if cli is not None and cli.available:
+            result = await cli.run("move", f"path={source_path}", f"to={destination_dir}")
+            if result.ok:
+                return f"Note moved: '{source_path}' → '{destination_path}'"
+            # CLI failed (e.g. destination dir doesn't exist) — fall through below
+
+        # Fallback: read → create → delete via REST API
         # Step 1: Read source content
         try:
             content = await client.get_note(source_path, as_json=False)

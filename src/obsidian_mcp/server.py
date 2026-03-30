@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from mcp.server import Server
 from mcp.types import TextContent, Tool
 
+from .cli import ObsidianCLI
 from .client import ObsidianClient
 from .tools import get_all_tools, handle_tool_call
 
@@ -16,8 +17,9 @@ load_dotenv()
 # Server instance
 app = Server("obsidian-mcp")
 
-# Global client instance
+# Global singletons
 client: ObsidianClient | None = None
+cli: ObsidianCLI | None = None
 
 
 def get_client() -> ObsidianClient:
@@ -26,6 +28,14 @@ def get_client() -> ObsidianClient:
     if client is None:
         client = ObsidianClient()
     return client
+
+
+def get_cli() -> ObsidianCLI:
+    """Get or create the Obsidian CLI instance."""
+    global cli
+    if cli is None:
+        cli = ObsidianCLI()
+    return cli
 
 
 @app.list_tools()
@@ -38,8 +48,7 @@ async def list_tools() -> list[Tool]:
 async def call_tool(name: str, arguments: Any) -> list[TextContent]:
     """Handle tool calls."""
     try:
-        client = get_client()
-        result = await handle_tool_call(name, arguments, client)
+        result = await handle_tool_call(name, arguments, get_client(), get_cli())
         return [TextContent(type="text", text=result)]
     except Exception as e:
         return [TextContent(type="text", text=f"Error: {str(e)}")]
