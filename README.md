@@ -1,4 +1,4 @@
-# Obsidian Efficient MCP
+# Obsidian MCP
 
 An MCP (Model Context Protocol) server that connects your LLM to your Obsidian vault. Read, write, search, and organize your notes through natural conversation.
 
@@ -31,8 +31,8 @@ Built on top of the [Obsidian Local REST API](https://github.com/coddingtonbear/
 ### 2. Install the MCP server
 
 ```bash
-git clone https://github.com/Vosloo/obsidian-efficient-mcp.git
-cd obsidian-efficient-mcp
+git clone https://github.com/Vosloo/Obsidian-MCP.git
+cd Obsidian-MCP
 uv sync
 ```
 
@@ -75,7 +75,7 @@ Add the server entry (replace the path with your actual project path):
       "command": "uv",
       "args": [
         "--directory",
-        "/absolute/path/to/obsidian-efficient-mcp",
+        "/absolute/path/to/Obsidian-MCP",
         "run",
         "obsidian-mcp"
       ],
@@ -95,7 +95,7 @@ Restart Claude Desktop. The Obsidian tools should appear in the interface.
 Add to your `.claude/settings.json` or run:
 
 ```bash
-claude mcp add obsidian -- uv --directory /absolute/path/to/obsidian-efficient-mcp run obsidian-mcp
+claude mcp add obsidian -- uv --directory /absolute/path/to/Obsidian-MCP run obsidian-mcp
 ```
 
 Set the environment variables in your shell or `.env` file before launching.
@@ -105,7 +105,7 @@ Set the environment variables in your shell or `.env` file before launching.
 Any client that supports the [Model Context Protocol](https://modelcontextprotocol.io/) can connect. Point it at:
 
 ```
-uv --directory /path/to/obsidian-efficient-mcp run obsidian-mcp
+uv --directory /path/to/Obsidian-MCP run obsidian-mcp
 ```
 
 The server communicates over **stdio**.

@@ -14,7 +14,7 @@
 
 ```bash
 # Navigate to the project directory
-cd obsidian-efficient-mcp
+cd Obsidian-MCP
 
 # Install dependencies using uv
 uv sync
@@ -66,7 +66,7 @@ Add this configuration (replace the path with your actual path):
       "command": "uv",
       "args": [
         "--directory",
-        "D:/Projects/obsidian-efficient-mcp",
+        "D:/Projects/Obsidian-MCP",
         "run",
         "obsidian-mcp"
       ],
