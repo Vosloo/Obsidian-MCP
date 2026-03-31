@@ -27,15 +27,11 @@ uv sync
 ```bash
 # Copy the example environment file
 cp .env.example .env
-
-# Edit .env with your favorite editor
-# On Windows: notepad .env
-# On macOS/Linux: nano .env
 ```
 
 Update these values in `.env`:
 ```bash
-OBSIDIAN_API_URL=http://127.0.0.1:27123
+OBSIDIAN_API_URL=https://127.0.0.1:27124
 OBSIDIAN_API_KEY=paste_your_api_key_here
 ```
 
@@ -57,7 +53,7 @@ Edit: `%APPDATA%\Claude\claude_desktop_config.json`
 ### macOS
 Edit: `~/Library/Application Support/Claude/claude_desktop_config.json`
 
-Add this configuration (replace the path with your actual path):
+Add this configuration (replace the path with your actual absolute path):
 
 ```json
 {
@@ -66,12 +62,12 @@ Add this configuration (replace the path with your actual path):
       "command": "uv",
       "args": [
         "--directory",
-        "D:/Projects/Obsidian-MCP",
+        "/absolute/path/to/Obsidian-MCP",
         "run",
         "obsidian-mcp"
       ],
       "env": {
-        "OBSIDIAN_API_URL": "http://127.0.0.1:27123",
+        "OBSIDIAN_API_URL": "https://127.0.0.1:27124",
         "OBSIDIAN_API_KEY": "your_api_key_here"
       }
     }
@@ -84,7 +80,17 @@ Add this configuration (replace the path with your actual path):
 - Use the absolute path to the project directory
 - Replace `your_api_key_here` with your actual API key
 
-## Step 6: Restart Claude Desktop
+## Step 6 (Alternative): Configure Claude Code CLI
+
+If you use Claude Code instead of Claude Desktop, run:
+
+```bash
+claude mcp add obsidian -- uv --directory /absolute/path/to/Obsidian-MCP run obsidian-mcp
+```
+
+Then set the environment variables in your shell or `.env` file before launching Claude Code.
+
+## Step 7: Restart Claude Desktop
 
 1. Completely quit Claude Desktop
 2. Reopen Claude Desktop
@@ -100,7 +106,7 @@ Add this configuration (replace the path with your actual path):
 ### "Connection refused" or "Cannot connect"
 - Make sure Obsidian is running
 - Make sure the Local REST API plugin is enabled
-- Check that the port in `.env` matches the plugin settings (default: 27123)
+- Check that the port in `.env` matches the plugin settings (default: 27124 for HTTPS)
 
 ### "Module not found" errors
 - Run `uv sync` again in the project directory
