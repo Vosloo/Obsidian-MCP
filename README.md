@@ -25,6 +25,7 @@ It's built for personal use, but structured and documented enough to be useful t
 - [Obsidian](https://obsidian.md/) with the **Local REST API** community plugin installed and enabled
 - [uv](https://docs.astral.sh/uv/) (Python package manager)
 - Python 3.12+
+- *(Optional)* Obsidian 1.12+ with the **CLI enabled** (Settings → General → Advanced → "Command line interface") — required for `get_tags`, `get_unresolved_links`, and native `move_note`
 
 ## Setup
 
@@ -130,7 +131,7 @@ The server communicates over **stdio**.
 | `append_to_note` | Append content to an existing note |
 | `update_section` | Update content under a specific heading |
 | `update_frontmatter` | Update a frontmatter field |
-| `move_note` | Move or rename a note to a new path |
+| `move_note` | Move a note to a new directory (uses Obsidian CLI for native move when available, otherwise falls back to copy + delete) |
 | `delete_note` | Delete a note |
 | `list_vault_files` | List all files in the vault root |
 | `list_directory` | List contents of a specific directory |
@@ -142,8 +143,8 @@ The server communicates over **stdio**.
 | `tree_view` | Display directory structure as a tree |
 | `open_note_in_obsidian` | Open a note in the Obsidian UI |
 | `get_vault_info` | Get vault name, path, and API status |
-| `get_tags` | List all tags in the vault with occurrence counts |
-| `get_unresolved_links` | Find broken wikilinks across the vault |
+| `get_tags` | List all tags in the vault with occurrence counts *(requires Obsidian CLI)* |
+| `get_unresolved_links` | Find broken wikilinks across the vault *(requires Obsidian CLI)* |
 
 ## Troubleshooting
 

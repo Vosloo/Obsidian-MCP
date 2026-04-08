@@ -10,7 +10,17 @@
 6. **Copy your API Key** (you'll need this in Step 3)
 7. Note the API port (default is `27123`)
 
-## Step 2: Install the MCP Server
+## Step 2 (Optional): Enable the Obsidian CLI
+
+Some tools (`get_tags`, `get_unresolved_links`) and an enhanced version of `move_note` rely on the Obsidian CLI, which ships with **Obsidian 1.12+** but must be explicitly enabled:
+
+1. Open Obsidian
+2. Go to **Settings → General → Advanced**
+3. Toggle on **"Command line interface"**
+
+Without this, `get_tags` and `get_unresolved_links` will report that the CLI is unavailable, and `move_note` will fall back to a copy-then-delete approach (which doesn't preserve timestamps or trigger Obsidian's automatic link updates).
+
+## Step 3: Install the MCP Server
 
 ```bash
 # Navigate to the project directory
@@ -22,7 +32,7 @@ uv sync
 # This will create a .venv folder with all dependencies
 ```
 
-## Step 3: Configure Environment
+## Step 4: Configure Environment
 
 ```bash
 # Copy the example environment file
@@ -35,7 +45,7 @@ OBSIDIAN_API_URL=https://127.0.0.1:27124
 OBSIDIAN_API_KEY=paste_your_api_key_here
 ```
 
-## Step 4: Test the Connection
+## Step 5: Test the Connection
 
 ```bash
 # Try running the server directly
@@ -45,7 +55,7 @@ uv run obsidian-mcp
 # Press Ctrl+C to stop it
 ```
 
-## Step 5: Configure Claude Desktop
+## Step 6: Configure Claude Desktop
 
 ### Windows
 Edit: `%APPDATA%\Claude\claude_desktop_config.json`
@@ -80,7 +90,7 @@ Add this configuration (replace the path with your actual absolute path):
 - Use the absolute path to the project directory
 - Replace `your_api_key_here` with your actual API key
 
-## Step 6 (Alternative): Configure Claude Code CLI
+## Step 7 (Alternative): Configure Claude Code CLI
 
 If you use Claude Code instead of Claude Desktop, run:
 
@@ -90,7 +100,7 @@ claude mcp add obsidian -- uv --directory /absolute/path/to/Obsidian-MCP run obs
 
 Then set the environment variables in your shell or `.env` file before launching Claude Code.
 
-## Step 7: Restart Claude Desktop
+## Step 8: Restart Claude Desktop
 
 1. Completely quit Claude Desktop
 2. Reopen Claude Desktop
