@@ -44,7 +44,7 @@ def get_write_tools() -> list[Tool]:
         ),
         Tool(
             name="update_section",
-            description="Update content under a specific heading in a note. Works around REST API bugs by reading, modifying, and writing back. Use heading names without # symbols (e.g., 'Combat Encounters' or 'Status').",
+            description="Update content under a specific heading in a note. Use the full heading path as returned by get_document_map (e.g., 'Document Title::Section Name' or just 'Section Name' for top-level headings without a parent H1).",
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -54,11 +54,22 @@ def get_write_tools() -> list[Tool]:
                     },
                     "heading": {
                         "type": "string",
-                        "description": "Heading name to target (without # symbols, e.g., 'Details' or 'Combat Encounters')",
+                        "description": "Heading path as shown by get_document_map, without # symbols (e.g., 'Document Title::Section Name' or 'Section Name')",
                     },
                     "content": {
                         "type": "string",
                         "description": "New content for the section. Use actual newline characters (\\n), not escaped strings. Multi-line content should be a proper multi-line string.",
+                    },
+                    "operation": {
+                        "type": "string",
+                        "enum": ["replace", "append", "prepend"],
+                        "description": "How to update the section content (default: replace)",
+                        "default": "replace",
+                    },
+                    "create_if_missing": {
+                        "type": "boolean",
+                        "description": "Create the heading section if it doesn't exist (default: false)",
+                        "default": False,
                     },
                 },
                 "required": ["path", "heading", "content"],
@@ -167,47 +178,14 @@ async def handle_write_tool(name: str, arguments: dict, client, cli=None) -> str
         return f"Content appended to: {arguments['path']}"
 
     elif name == "update_section":
-        # Workaround for buggy REST API PATCH: read, modify, write back
-        path = arguments["path"]
-        heading = arguments["heading"]
-        new_content = arguments["content"]
-
-        # Read the current note
-        content = await client.get_note(path, as_json=False)
-        lines = content.split("\n")
-
-        # Find the section
-        section_range = _find_section(lines, heading)
-
-        if section_range is None:
-            # List available headings for helpful error message
-            available_headings = [
-                line.strip().lstrip("#").strip() for line in lines if line.strip().startswith("#")
-            ]
-            return f"Error: Heading '{heading}' not found in {path}. Available headings: {available_headings}"
-
-        start_idx, end_idx = section_range
-
-        # Build new content
-        new_lines = []
-
-        # Keep everything before the section
-        new_lines.extend(lines[: start_idx + 1])  # Include the heading line
-
-        # Add new content
-        new_lines.append("")  # Blank line after heading
-        new_lines.append(new_content)
-
-        # Add everything after the section
-        if end_idx + 1 < len(lines):
-            new_lines.append("")  # Blank line before next section
-            new_lines.extend(lines[end_idx + 1 :])
-
-        # Write back
-        new_note_content = "\n".join(new_lines)
-        await client.create_note(path, new_note_content)
-
-        return f"Section '{heading}' updated in: {path}"
+        await client.update_section(
+            path=arguments["path"],
+            heading=arguments["heading"],
+            content=arguments["content"],
+            operation=arguments.get("operation", "replace"),
+            create_if_missing=arguments.get("create_if_missing", False),
+        )
+        return f"Section '{arguments['heading']}' updated in: {arguments['path']}"
 
     elif name == "move_note":
         source_path = arguments["source_path"]

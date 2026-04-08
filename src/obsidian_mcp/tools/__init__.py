@@ -45,13 +45,20 @@ def get_all_tools():
     )
 
 
+def _is_routing_miss(exc: ValueError, name: str) -> bool:
+    """Return True if a ValueError signals 'handler doesn't know this tool'."""
+    msg = str(exc)
+    return "Unknown" in msg and name in msg
+
+
 async def handle_tool_call(name: str, arguments: dict, client, cli=None):
     """Route tool call to appropriate handler."""
     # CLI tools
     try:
         return await handle_cli_tool(name, arguments, cli)
-    except ValueError:
-        pass
+    except ValueError as e:
+        if not _is_routing_miss(e, name):
+            raise
 
     # REST API tools — cli passed to write handler for move_note upgrade
     rest_handlers = [
@@ -68,7 +75,9 @@ async def handle_tool_call(name: str, arguments: dict, client, cli=None):
     for handler in rest_handlers:
         try:
             return await handler(name, arguments, client)
-        except ValueError:
+        except ValueError as e:
+            if not _is_routing_miss(e, name):
+                raise
             continue
 
     raise ValueError(f"Unknown tool: {name}")

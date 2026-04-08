@@ -111,36 +111,53 @@ class TestAppendToNote:
 
 class TestUpdateSection:
     @pytest.mark.anyio
-    async def test_replaces_section(self, mock_client):
-        note_content = "# Title\n\nIntro.\n\n## Target\n\nOld content.\n\n## Other\n\nKeep this."
-        mock_client.get_note.return_value = note_content
-
+    async def test_delegates_to_client(self, mock_client):
         result = await handle_write_tool(
             "update_section",
             {"path": "note.md", "heading": "Target", "content": "New content."},
             mock_client,
         )
 
-        mock_client.create_note.assert_awaited_once()
-        written_content = mock_client.create_note.call_args[0][1]
-        assert "New content." in written_content
-        assert "Old content." not in written_content
-        assert "Keep this." in written_content
+        mock_client.update_section.assert_awaited_once_with(
+            path="note.md",
+            heading="Target",
+            content="New content.",
+            operation="replace",
+            create_if_missing=False,
+        )
         assert "Target" in result
 
     @pytest.mark.anyio
-    async def test_heading_not_found_returns_error(self, mock_client):
-        mock_client.get_note.return_value = "# Title\n\n## Existing\n\nContent."
-
-        result = await handle_write_tool(
+    async def test_append_operation(self, mock_client):
+        await handle_write_tool(
             "update_section",
-            {"path": "note.md", "heading": "Missing", "content": "x"},
+            {"path": "note.md", "heading": "Log", "content": "Entry.", "operation": "append"},
             mock_client,
         )
 
-        assert "Error" in result
-        assert "Missing" in result
-        assert "Existing" in result  # lists available headings
+        mock_client.update_section.assert_awaited_once_with(
+            path="note.md",
+            heading="Log",
+            content="Entry.",
+            operation="append",
+            create_if_missing=False,
+        )
+
+    @pytest.mark.anyio
+    async def test_create_if_missing(self, mock_client):
+        await handle_write_tool(
+            "update_section",
+            {"path": "note.md", "heading": "New Section", "content": "Hello.", "create_if_missing": True},
+            mock_client,
+        )
+
+        mock_client.update_section.assert_awaited_once_with(
+            path="note.md",
+            heading="New Section",
+            content="Hello.",
+            operation="replace",
+            create_if_missing=True,
+        )
 
 
 class TestUpdateFrontmatter:

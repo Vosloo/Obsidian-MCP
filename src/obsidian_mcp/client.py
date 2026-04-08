@@ -230,12 +230,48 @@ class ObsidianClient:
         )
         response.raise_for_status()
 
+    async def get_section(self, path: str, heading: str) -> str:
+        """Get content of a specific heading section.
+
+        Args:
+            path: Path to note relative to vault root
+            heading: Heading name or '::'-delimited path (as returned by get_document_map),
+                     e.g. 'Section A' or 'Parent::Child'
+
+        Returns:
+            Section content as markdown text
+        """
+        heading_path = "/".join(quote(part, safe="") for part in heading.split("::"))
+        response = await self.client.get(
+            f"/vault/{quote(path, safe='')}/heading/{heading_path}",
+            headers={"Accept": "text/markdown"},
+        )
+        response.raise_for_status()
+        return response.text
+
+    async def get_document_map(self, path: str) -> dict[str, Any]:
+        """Get structural map of a note: headings, block references, frontmatter fields.
+
+        Args:
+            path: Path to note relative to vault root
+
+        Returns:
+            Document map with headings hierarchy, block IDs, and frontmatter keys
+        """
+        response = await self.client.get(
+            f"/vault/{quote(path, safe='')}",
+            headers={"Accept": "application/vnd.olrapi.document-map+json"},
+        )
+        response.raise_for_status()
+        return response.json()
+
     async def update_section(
         self,
         path: str,
         heading: str,
         content: str,
         operation: str = "replace",
+        create_if_missing: bool = False,
     ) -> None:
         """Update a specific section under a heading.
 
@@ -244,25 +280,30 @@ class ObsidianClient:
             heading: Heading name to target (without # symbols)
             content: New content for the section
             operation: Operation type (replace, append, prepend)
+            create_if_missing: If True, create the heading section if it doesn't exist
         """
+        headers: dict[str, str] = {
+            "Content-Type": "text/markdown",
+            "Operation": operation,
+            "Target-Type": "heading",
+            "Target": heading,
+        }
+        if create_if_missing:
+            headers["Create-Target-If-Missing"] = "true"
+
         try:
             response = await self.client.patch(
                 f"/vault/{quote(path, safe='')}",
                 content=content,
-                headers={
-                    "Content-Type": "text/markdown",
-                    "Operation": operation,
-                    "Target-Type": "heading",
-                    "Target": heading,
-                },
+                headers=headers,
             )
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 400:
                 raise ValueError(
                     f"Failed to update section '{heading}' in '{path}'. "
-                    f"Make sure the heading exists and doesn't include # symbols. "
-                    f"API response: {e.response.text}"
+                    f"Make sure the heading path matches get_document_map output "
+                    f"(e.g. 'Title::Section'). API response: {e.response.text}"
                 ) from e
             raise
 
