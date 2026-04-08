@@ -160,7 +160,7 @@ class ObsidianClient:
         Returns:
             Directory listing with files array
         """
-        response = await self.client.get(f"/vault/{quote(path, safe='')}/")
+        response = await self.client.get(f"/vault/{quote(path.rstrip('/'), safe='')}/")
         response.raise_for_status()
         return response.json()
 
